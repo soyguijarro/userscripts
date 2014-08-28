@@ -5,6 +5,12 @@ This repository hosts a few user scripts I've written. These are little pieces o
 
 ## Features
 
+### Letterboxd Average Rating
+
+![Letterboxd Average Rating in action](img/letterboxd_average_rating_screenshot.gif)
+
+Adds the average rating of the film to [Letterboxd](http://letterboxd.com)'s film pages. It is presented with star icons above the rating histogram. Hovering over reveals the exact number.
+
 ### Letterboxd Backdrop Remover
 
 ![Letterboxd Backdrop Remover in action](img/letterboxd_backdrop_remover_screenshot.gif)
