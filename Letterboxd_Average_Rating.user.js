@@ -8,8 +8,8 @@
 // @updateURL   https://raw.githubusercontent.com/rcalderong/userscripts/master/Letterboxd_Average_Rating.user.js
 // @icon        https://raw.githubusercontent.com/rcalderong/userscripts/master/img/letterboxd_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
-// @version     1.0
-// @include     http://*letterboxd.com/film/*/
+// @version     1.1
+// @include     /^http:\/\/(www.)?letterboxd.com\/film\/[\w|\-]+\/$/
 // @grant       none
 // ==/UserScript==
 
@@ -30,7 +30,7 @@
     newElt.className = "rating-green tooltip";
     newElt.setAttribute("href",
             ratingsElt.querySelector("h3 a").getAttribute("href"));
-    newElt.setAttribute("title", rating5.replace(/\./, ",") + " stars");
+    newElt.setAttribute("title", rating5 + " stars");
     newElt.setAttribute("style", "position: absolute; top: 0; left: 72px;");
     newInnerElt = document.createElement("span");
     newInnerElt.className = "rating rated-" + Math.round(rating10);

@@ -8,8 +8,8 @@
 // @updateURL   https://raw.githubusercontent.com/rcalderong/userscripts/master/Letterboxd_Backdrop_Remover.user.js
 // @icon        https://raw.githubusercontent.com/rcalderong/userscripts/master/img/letterboxd_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
-// @version     1.0
-// @include     http://*letterboxd.com/film/*/
+// @version     1.1
+// @include     /^http:\/\/(www.)?letterboxd.com\/film\/[\w|\-]+\/$/
 // @grant       none
 // ==/UserScript==
 
