@@ -21,15 +21,16 @@
         ratingsElt;     // Page element of the ratings section
 
     // Get average rating from page metadata
-    ratingsElt = document.querySelector(".ratings-histogram-chart");
-    rating10 = ratingsElt.querySelector("span meta").getAttribute("content");
-    rating5 = (rating10 / 2).toFixed(1);            
+    ratingsElt = document.querySelector("section.ratings-histogram-chart");
+    rating10 = ratingsElt.querySelector("span.average-rating meta")
+        .getAttribute("content");
+    rating5 = (rating10 / 2).toFixed(1);
 
     // Create element to be inserted in page
     newElt = document.createElement("a");
     newElt.className = "rating-green tooltip";
     newElt.setAttribute("href",
-            ratingsElt.querySelector("h3 a").getAttribute("href"));
+        ratingsElt.querySelector("h3 a").getAttribute("href"));
     newElt.setAttribute("title", rating5 + " stars");
     newElt.setAttribute("style", "position: absolute; top: 0; left: 72px;");
     newInnerElt = document.createElement("span");

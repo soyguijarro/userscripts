@@ -26,7 +26,7 @@
 // ==/UserScript==
 
 (function () {
-    var diaryURL,   // URL of the user's film diary
+    var diaryUrl,   // URL of the user's film diary
         filmsMonth, // Average number of films watched per month
         filmsWeek,  // Average number of films watched per week
         filmsYear,  // Number of films watched this year
@@ -34,7 +34,7 @@
 
     // Get data from page
     statsElt = document.querySelector("ul.stats");
-    diaryURL = statsElt.children[1].children[0].getAttribute("href");
+    diaryUrl = statsElt.children[1].children[0].getAttribute("href");
     filmsYear = statsElt.children[1].children[0].children[0].innerHTML;
 
     // Calculate averages
@@ -54,7 +54,7 @@
             numberElt = document.createElement("strong"),
             textElt = document.createElement("span");
         
-        linkElt.setAttribute("href", diaryURL);
+        linkElt.setAttribute("href", diaryUrl);
         numberElt.innerHTML = filmsAvg;
         textElt.innerHTML = (filmsAvg === filmsWeek) ? "Per week" : "Per month";
 
@@ -64,6 +64,6 @@
         
         statsElt.insertBefore(newElt, statsElt.children[2]);
         infoElt.style.width = infoElt.style.maxWidth =
-                infoElt.offsetWidth - newElt.offsetWidth + "px";
+            infoElt.offsetWidth - newElt.offsetWidth + "px";
     });
 }());
