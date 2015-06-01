@@ -1,4 +1,4 @@
-// ==UserScript==
+﻿// ==UserScript==
 // @name        Letterboxd Extra Profile Stats
 // @namespace   https://github.com/rcalderong/userscripts
 // @description Adds average number of films watched per month and per week to profile pages
@@ -8,7 +8,7 @@
 // @updateURL   https://raw.githubusercontent.com/rcalderong/userscripts/master/Letterboxd_Extra_Profile_Stats.user.js
 // @icon        https://raw.githubusercontent.com/rcalderong/userscripts/master/img/letterboxd_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
-// @version     1.2
+// @version     1.3
 // @include     /^http:\/\/(www.)?letterboxd.com\/[\w]+\/$/
 // @exclude     /^http:\/\/(www.)?letterboxd.com\/activity\/$/
 // @exclude     /^http:\/\/(www.)?letterboxd.com\/films\/$/
@@ -35,7 +35,7 @@
     // Get data from page
     statsElt = document.querySelector("ul.stats");
     diaryUrl = statsElt.children[1].children[0].getAttribute("href");
-    filmsYear = statsElt.children[1].children[0].children[0].innerHTML;
+    filmsYear = statsElt.children[1].children[0].children[0].textContent;
 
     // Calculate averages
     filmsMonth = +(filmsYear / (new Date().getMonth() + 1)).toFixed(1);
@@ -55,8 +55,8 @@
             textElt = document.createElement("span");
         
         linkElt.setAttribute("href", diaryUrl);
-        numberElt.innerHTML = filmsAvg;
-        textElt.innerHTML = (filmsAvg === filmsWeek) ? "Per week" : "Per month";
+        numberElt.textContent = filmsAvg;
+        textElt.textContent = (filmsAvg === filmsWeek) ? "Per week" : "Per month";
 
         linkElt.appendChild(numberElt);
         linkElt.appendChild(textElt);
