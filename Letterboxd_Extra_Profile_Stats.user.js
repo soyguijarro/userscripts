@@ -8,7 +8,7 @@
 // @updateURL   https://raw.githubusercontent.com/rcalderong/userscripts/master/Letterboxd_Extra_Profile_Stats.user.js
 // @icon        https://raw.githubusercontent.com/rcalderong/userscripts/master/img/letterboxd_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
-// @version     1.1
+// @version     1.2
 // @include     /^http:\/\/(www.)?letterboxd.com\/[\w]+\/$/
 // @exclude     /^http:\/\/(www.)?letterboxd.com\/activity\/$/
 // @exclude     /^http:\/\/(www.)?letterboxd.com\/films\/$/
@@ -43,7 +43,7 @@
 
     // Remove zero after decimal point, if present
     [filmsMonth, filmsWeek].map(function (n) {
-        return (n === parseInt(n)) ? parseInt(n) : n;
+        return (n === parseInt(n, 10)) ? parseInt(n, 10) : n;
     });
 
     // Insert calculated averages in page
