@@ -9,7 +9,7 @@ This repository hosts a few user scripts I've written. These are little pieces o
 
 ![Letterboxd Average Rating in action](img/letterboxd_average_rating_screenshot.gif)
 
-Adds the average rating of a film to [Letterboxd](http://letterboxd.com)'s film pages. It is presented with star icons above the rating histogram. Hovering over reveals the exact number.
+Adds the average rating of a film to [Letterboxd](http://letterboxd.com)'s film pages. It is presented with star icons above the rating histogram. Hovering over reveals the exact number of stars, as well as the equivalent one-to-ten rating.
 
 ### Letterboxd External Ratings
 

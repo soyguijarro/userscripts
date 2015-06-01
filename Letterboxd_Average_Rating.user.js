@@ -8,7 +8,7 @@
 // @updateURL   https://raw.githubusercontent.com/rcalderong/userscripts/master/Letterboxd_Average_Rating.user.js
 // @icon        https://raw.githubusercontent.com/rcalderong/userscripts/master/img/letterboxd_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
-// @version     1.1
+// @version     1.2
 // @include     /^http:\/\/(www.)?letterboxd.com\/film\/[\w|\-]+\/$/
 // @grant       none
 // ==/UserScript==
@@ -22,8 +22,8 @@
 
     // Get average rating from page metadata
     ratingsElt = document.querySelector("section.ratings-histogram-chart");
-    rating10 = ratingsElt.querySelector("span.average-rating meta")
-        .getAttribute("content");
+    rating10 = parseFloat(ratingsElt.querySelector("span.average-rating meta").
+        getAttribute("content"));
     rating5 = (rating10 / 2).toFixed(1);
 
     // Create element to be inserted in page
@@ -31,7 +31,7 @@
     newElt.className = "rating-green tooltip";
     newElt.setAttribute("href",
         ratingsElt.querySelector("h3 a").getAttribute("href"));
-    newElt.setAttribute("title", rating5 + " stars");
+    newElt.setAttribute("title", rating5 + " stars" + " (" + rating10 + "/10)");
     newElt.setAttribute("style", "position: absolute; top: 0; left: 72px;");
     newInnerElt = document.createElement("span");
     newInnerElt.className = "rating rated-" + Math.round(rating10);
