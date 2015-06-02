@@ -8,7 +8,7 @@
 // @updateURL   https://raw.githubusercontent.com/rcalderong/userscripts/master/Letterboxd_Average_Rating.user.js
 // @icon        https://raw.githubusercontent.com/rcalderong/userscripts/master/img/letterboxd_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
-// @version     1.2
+// @version     1.3
 // @include     /^http:\/\/(www.)?letterboxd.com\/film\/[\w|\-]+\/$/
 // @grant       GM_xmlhttpRequest
 // @grant       unsafeWindow
@@ -110,15 +110,15 @@
     }
 
     function fillRatingsSection() {
-        var filmHeaderElt = document.getElementById("featured-film-header"),
-            filmTitle = filmHeaderElt.querySelector("h1.film-title").textContent,
-            filmYear = parseInt(filmHeaderElt.querySelector("p small a").textContent, 10),
+        var filmDataElt = document.querySelector("section.posters div.film-poster"),
+            filmTitle = filmDataElt.getAttribute("data-film-name"),
+            filmYear = parseInt(filmDataElt.getAttribute("data-film-release-year"), 10),
             imdbUrlElt = document.querySelector("section.col-main p.text-link a"),
             imdbUrl = imdbUrlElt.getAttribute("href"),
             rottenBaseUrl = "http://www.rottentomatoes.com/search/?search=",
             rottenUrl = rottenBaseUrl + encodeURIComponent(filmTitle);
 
-        function updateRatingsSection(siteName, siteUrl, rating) {
+        function updateRatingsSection(rating, siteName, siteUrl) {
             var index = externalSites.indexOf(siteName),
                 ratingsSectionElt = document.querySelector("section.ratings-external"),
                 spinnerElt = ratingsSectionElt.querySelector("div.spinner"),
@@ -151,46 +151,69 @@
             }
         }
 
+        function getFinalUrlAbsPath(response, baseUrl) {
+            var path = response.finalUrl;
+
+            if (path.match(/^http/)) {  // Absolute path
+                return path;
+            } else {                    // Relative path
+                return baseUrl + path;
+            }
+        }
+
         function getIMDbAndMetaRatings(response) {
             var res = response.responseText,
                 parser = new DOMParser(),
                 dom = parser.parseFromString(res, "text/html"),
-                ratingsElt = dom.getElementById("overview-top"),
-                imdbRatingElt = ratingsElt.
-                    getElementsByClassName("star-box-giga-star")[0],
-                metaRatingElt = ratingsElt.
-                    getElementsByClassName("star-box-details")[0],
-                imdbRating,
-                metaRatingMatch,
-                metaRating,
-                metaUrl;
+                ratingsElt = dom.getElementById("overview-top");
+            
+            imdbUrl = getFinalUrlAbsPath(response, "http://www.imdb.com");
 
-            imdbUrl = response.finalUrl;
+            function getIMDbRating() {
+                var imdbRating,
+                    imdbRatingElt = ratingsElt.
+                        getElementsByClassName("star-box-giga-star")[0];
 
-            // Get IMDb rating from page
-            if (imdbRatingElt) {
-                imdbRating = parseFloat(imdbRatingElt.textContent);
-                updateRatingsSection("IMDb", imdbUrl, imdbRating);
-            } else {
-                // No rating found
-                updateRatingsSection("IMDb", imdbUrl, null);
-            }
-
-            // Get Metacritic rating from page
-            if (metaRatingElt) {
-                metaRatingMatch = metaRatingElt.textContent.
-                    match(/Metascore:  \d+/);
-                if (metaRatingMatch) {
-                    metaRating = metaRatingMatch[0].match(/\d+/) / 10;
-                    metaUrl = imdbUrl + "criticreviews";
-                    updateRatingsSection("Metacritic", metaUrl, metaRating);
+                if (imdbRatingElt) {
+                    imdbRating = parseFloat(imdbRatingElt.textContent);
+                    updateRatingsSection(imdbRating, "IMDb", imdbUrl);
                 } else {
                     // No rating found
-                    updateRatingsSection("Metacritic", metaUrl, null);
+                    updateRatingsSection(null, "IMDb");
                 }
+            }
+
+            function getMetaRating() {
+                var metaRatingMatch,
+                    metaUrl,
+                    metaRatingElt = ratingsElt.
+                        getElementsByClassName("star-box-details")[0];
+
+                if (metaRatingElt) {
+                    metaRatingMatch = metaRatingElt.textContent.
+                        match(/Metascore:  \d+/);
+
+                    if (metaRatingMatch) {
+                        metaRating = metaRatingMatch[0].match(/\d+/) / 10;
+                        metaUrl = imdbUrl + "criticreviews";
+                        updateRatingsSection(metaRating, "Metacritic", metaUrl);
+                    } else {
+                        // No rating found
+                        updateRatingsSection(null, "Metacritic");
+                    }
+                } else {
+                    // No rating found
+                    updateRatingsSection(null, "Metacritic");
+                }    
+            }
+
+            if (ratingsElt) {
+                getIMDbRating();
+                getMetaRating();
             } else {
-                // No rating found
-                updateRatingsSection("Metacritic", metaUrl, null);
+                // No ratings found
+                updateRatingsSection(null, "IMDb");
+                updateRatingsSection(null, "Metacritic");
             }
         }
 
@@ -198,7 +221,7 @@
             var res = response.responseText,
                 parser = new DOMParser(),
                 dom = parser.parseFromString(res, "text/html"),
-                filmPageElt = dom.getElementById("scoreStats"),
+                filmPageElt = dom.getElementById("all-critics-numbers"),
                 searchPageElt = dom.getElementById("all_tab");
 
             function getRatingFromFilmPage(response) {
@@ -215,16 +238,17 @@
                     if (ratingMatch) {
                         rottenRating = parseFloat(ratingMatch[0].
                             match(/[0-9.]+/));
-                        rottenUrl = response.finalUrl;
-                        updateRatingsSection("Rotten Tomatoes", rottenUrl,
-                            rottenRating);
+                        rottenUrl = getFinalUrlAbsPath(response,
+                            "http://www.rottentomatoes.com");
+                        updateRatingsSection(rottenRating, "Rotten Tomatoes",
+                            rottenUrl);
                     } else {
                         // No rating found
-                        updateRatingsSection("Rotten Tomatoes", rottenUrl, null);
+                        updateRatingsSection(null, "Rotten Tomatoes");
                     }
                 } else {
                     // No rating found
-                    updateRatingsSection("Rotten Tomatoes", rottenUrl, null);
+                    updateRatingsSection(null, "Rotten Tomatoes");
                 }
             }
 
@@ -278,11 +302,11 @@
                     });
                 } else {
                     // No rating found
-                    updateRatingsSection("Rotten Tomatoes", rottenUrl, null);
+                    updateRatingsSection(null, "Rotten Tomatoes");
                 }
             } else {
                 // No rating found
-                updateRatingsSection("Rotten Tomatoes", rottenUrl, null);
+                updateRatingsSection(null, "Rotten Tomatoes");
             }
         }
 
