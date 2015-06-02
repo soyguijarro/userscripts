@@ -8,264 +8,296 @@
 // @updateURL   https://raw.githubusercontent.com/rcalderong/userscripts/master/Letterboxd_Average_Rating.user.js
 // @icon        https://raw.githubusercontent.com/rcalderong/userscripts/master/img/letterboxd_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
-// @version     1.1
+// @version     1.2
 // @include     /^http:\/\/(www.)?letterboxd.com\/film\/[\w|\-]+\/$/
 // @grant       GM_xmlhttpRequest
+// @grant       unsafeWindow
 // ==/UserScript==
 
 (function () {
-    var sites = ["IMDb", "Metacritic", "Rotten Tomatoes"],
-        loadingCounter = sites.length;
-
-    function decrLoadingCounter() {
-        loadingCounter--;
-
-        if (loadingCounter < 1) {
-            var parentNode = document.querySelector("section.ratings-external"),
-                childNode = parentNode.querySelector("div.spinner");
-
-            parentNode.removeChild(childNode);
-        }
-    }
+    var externalSites = ["IMDb", "Metacritic", "Rotten Tomatoes"],
+        loadingCounter = externalSites.length;
     
-    function buildRatingsDisplay() {
-        var ratingsElt = document.querySelector("section.ratings-histogram-chart"),
-            parentNode = ratingsElt.parentNode,
-            nextNode = ratingsElt.nextSibling,
-            newSection = document.createElement("section");
-        
-        // Create section to be inserted in page
-        newSection.className = "section ratings-external";
-        newSection.style.marginTop = "20px";
+    function createRatingsSection(callback) {
+        var sidebarElt = document.querySelector("aside.sidebar"),
+            sidebarLastElt = sidebarElt.lastElementChild,
+            ratingsSectionElt = document.createElement("section"),
+            spinnerElt = document.createElement("div"),
+            spinnerInnerElt = document.createElement("div"),
+            ratingElt,
+            ratingInnerElt;
 
-        // Create elements for section
-        for (var i = 0; i < sites.length; i++) {
-            var newElt = document.createElement("a"),
-                newInnerElt = document.createElement("span");
-            
-            newElt.textContent = sites[i];
-            newElt.className = "rating-green";
-            newElt.style.transition = "opacity 0.2s ease";
-            newElt.style.fontSize = "12px";
-            newElt.style.lineHeight = "1.5";
-            newElt.style.marginBottom = "0.5em";
-            newElt.style.opacity = "0";
-            newElt.style.display = "none";
-            
-            newInnerElt.className = "tooltip";
-            newInnerElt.style.right = "0";
-            newInnerElt.style.position = "absolute";
-            
-            newElt.appendChild(newInnerElt);
-            newSection.appendChild(newElt);
+        function getSpinnerImageUrl() {
+            for (var id in unsafeWindow.globals.spinners) {
+                if (id.match(/spinner_12/)) {
+                    return unsafeWindow.globals.spinners[id];
+                }
+            }
+            return null;
         }
 
-        // Create loading indicator (spinner) for section
-        var spinnerUrl =
-            "http://memento.cf1.letterboxd.com/static/img/spinners/spinner-12-2C3641.c95c11d5.gif";
+        function addStyle() {
+            var headElt = document.getElementsByTagName("head")[0],
+                styleElt = document.createElement("style"),
+                cssRules = "section.ratings-external {\
+                                margin-top: 20px;\
+                            }\
+                            section.ratings-external a {\
+                                font-size: 12px;\
+                                line-height: 1.5;\
+                                margin-bottom: 0.5em;\
+                            }\
+                            section.ratings-external span {\
+                                position: absolute;\
+                                right: 0;\
+                            }\
+                            section.ratings-external div.spinner {\
+                                background-color: #242D35;\
+                                border: 1px solid #333B42;\
+                                border-radius: 3px;\
+                                padding: 7px 0 8px;\
+                                width: 100%;\
+                                margin: 1em auto 0 auto;\
+                            }\
+                            section.ratings-external div.spinner-body {\
+                                background: url('" + getSpinnerImageUrl() + "');\
+                                height: 12px;\
+                                width: 12px;\
+                                margin: auto;\
+                            }";
 
-        var newLoadingElt = document.createElement("div");
-        newLoadingElt.className = "spinner";
-        newLoadingElt.style.borderRadius = "3px";
-        newLoadingElt.style.backgroundColor = "#242D35";
-        newLoadingElt.style.border = "1px solid #333B42";
-        newLoadingElt.style.padding = "7px 0 8px";
-        newLoadingElt.style.width = "100%";
-        newLoadingElt.style.margin = "1em auto 0 auto";
+            try {
+                styleElt.type = "text/css";
+                styleElt.innerHTML = cssRules;
+                headElt.appendChild(styleElt);
+            } catch (e) {
+                if (!document.styleSheets.length) {
+                    document.createStyleSheet();
+                }
+                document.styleSheets[0].cssText += cssRules;
+            }
+        }
+        
+        // Set up section to be inserted in page
+        ratingsSectionElt.className = "section ratings-external";
 
-        var newInnerLoadingElt = document.createElement("div");
-        newInnerLoadingElt.className = "spinner-body";
-        newInnerLoadingElt.style.width = newInnerLoadingElt.style.height = "12px";
-        newInnerLoadingElt.style.margin = "auto";
-        newInnerLoadingElt.style.backgroundImage = "url('" + spinnerUrl + "')";
+        // Set up section elements that will contain ratings
+        for (var i = 0; i < externalSites.length; i++) {
+            ratingElt = document.createElement("a");
+            ratingInnerElt = document.createElement("span");
+            
+            ratingElt.textContent = externalSites[i];
+            ratingElt.className = "rating-green";
+            ratingInnerElt.className = "tooltip";
+            ratingElt.style.display = "none";
+            
+            ratingElt.appendChild(ratingInnerElt);
+            ratingsSectionElt.appendChild(ratingElt);
+        }
 
-        newLoadingElt.appendChild(newInnerLoadingElt);
-        newSection.appendChild(newLoadingElt);
+        // Set up loading indicator (spinner)
+        spinnerElt.className = "spinner";
+        spinnerInnerElt.className = "spinner-body";
+
+        spinnerElt.appendChild(spinnerInnerElt);
+        ratingsSectionElt.appendChild(spinnerElt);
 
         // Insert section in page
-        parentNode.insertBefore(newSection, nextNode);
+        sidebarElt.insertBefore(ratingsSectionElt, sidebarLastElt);
+        addStyle();
 
-        // Fill section with data
-        getRatings();
+        callback();
     }
 
-    function getRatings() {
-        var filmTitle = document.
-                querySelector("#featured-film-header h1.film-title").textContent,
-            filmYear = parseInt(document.
-                querySelector("#featured-film-header p small a").textContent, 10),
-            imdbUrl = document.querySelector("section.col-main p.text-link a").
-                getAttribute("href"),
-            rottenUrl = encodeURI("http://www.rottentomatoes.com/search/?search=" +
-                filmTitle);
-        
-        getImdbAndMetaRatings = GM_xmlhttpRequest({
+    function fillRatingsSection() {
+        var filmHeaderElt = document.getElementById("featured-film-header"),
+            filmTitle = filmHeaderElt.querySelector("h1.film-title").textContent,
+            filmYear = parseInt(filmHeaderElt.querySelector("p small a").textContent, 10),
+            imdbUrlElt = document.querySelector("section.col-main p.text-link a"),
+            imdbUrl = imdbUrlElt.getAttribute("href"),
+            rottenBaseUrl = "http://www.rottentomatoes.com/search/?search=",
+            rottenUrl = rottenBaseUrl + encodeURIComponent(filmTitle);
+
+        function updateRatingsSection(siteName, siteUrl, rating) {
+            var index = externalSites.indexOf(siteName),
+                ratingsSectionElt = document.querySelector("section.ratings-external"),
+                spinnerElt = ratingsSectionElt.querySelector("div.spinner"),
+                ratingElts = ratingsSectionElt.getElementsByTagName("a"),
+                ratingElt = ratingElts[index],
+                ratingInnerElt = ratingElt.children[0],
+                ratingInStars = +(rating / 2).toFixed(1);   // Five-star scale
+
+            if (rating && rating !== "" && rating !== 0 && !isNaN(rating)) {
+                // Fill rating element with data
+                ratingInnerElt.classList.add("rating");
+                ratingInnerElt.classList.add("rated-" + Math.round(rating));
+                ratingInnerElt.setAttribute("title", ratingInStars +
+                    " stars (" + (+rating) + "/10)");
+                ratingElt.setAttribute("href", siteUrl);
+            } else {
+                // Remove rating element
+                ratingsSectionElt.removeChild(ratingElt);
+                externalSites.splice(index, 1);
+            }
+
+            loadingCounter--;
+            if (loadingCounter < 1) {
+                // Remove loading indicator (spinner)
+                ratingsSectionElt.removeChild(spinnerElt);
+                // Show ratings
+                for (var i = 0; i < ratingElts.length; i++) {
+                    ratingElts[i].style.display = "block";
+                }
+            }
+        }
+
+        function getIMDbAndMetaRatings(response) {
+            var res = response.responseText,
+                parser = new DOMParser(),
+                dom = parser.parseFromString(res, "text/html"),
+                ratingsElt = dom.getElementById("overview-top"),
+                imdbRatingElt = ratingsElt.
+                    getElementsByClassName("star-box-giga-star")[0],
+                metaRatingElt = ratingsElt.
+                    getElementsByClassName("star-box-details")[0],
+                imdbRating,
+                metaRatingMatch,
+                metaRating,
+                metaUrl;
+
+            imdbUrl = response.finalUrl;
+
+            // Get IMDb rating from page
+            if (imdbRatingElt) {
+                imdbRating = parseFloat(imdbRatingElt.textContent);
+                updateRatingsSection("IMDb", imdbUrl, imdbRating);
+            } else {
+                // No rating found
+                updateRatingsSection("IMDb", imdbUrl, null);
+            }
+
+            // Get Metacritic rating from page
+            if (metaRatingElt) {
+                metaRatingMatch = metaRatingElt.textContent.
+                    match(/Metascore:  \d+/);
+                if (metaRatingMatch) {
+                    metaRating = metaRatingMatch[0].match(/\d+/) / 10;
+                    metaUrl = imdbUrl + "criticreviews";
+                    updateRatingsSection("Metacritic", metaUrl, metaRating);
+                } else {
+                    // No rating found
+                    updateRatingsSection("Metacritic", metaUrl, null);
+                }
+            } else {
+                // No rating found
+                updateRatingsSection("Metacritic", metaUrl, null);
+            }
+        }
+
+        function getRottenRatings(response) {
+            var res = response.responseText,
+                parser = new DOMParser(),
+                dom = parser.parseFromString(res, "text/html"),
+                filmPageElt = dom.getElementById("scoreStats"),
+                searchPageElt = dom.getElementById("all_tab");
+
+            function getRatingFromFilmPage(response) {
+                var res = response.responseText,
+                    dom = parser.parseFromString(res, "text/html"),
+                    ratingElt = dom.getElementById("scoreStats"),
+                    ratingMatch,
+                    rottenRating;
+                
+                if (ratingElt) {
+                    ratingMatch = ratingElt.textContent.
+                        match(/Average Rating:  [0-9.]+/);
+                    
+                    if (ratingMatch) {
+                        rottenRating = parseFloat(ratingMatch[0].
+                            match(/[0-9.]+/));
+                        rottenUrl = response.finalUrl;
+                        updateRatingsSection("Rotten Tomatoes", rottenUrl,
+                            rottenRating);
+                    } else {
+                        // No rating found
+                        updateRatingsSection("Rotten Tomatoes", rottenUrl, null);
+                    }
+                } else {
+                    // No rating found
+                    updateRatingsSection("Rotten Tomatoes", rottenUrl, null);
+                }
+            }
+
+            function getFilmPageUrlFromSearchPage(response) {
+                var res = response.responseText,
+                    dom = parser.parseFromString(res, "text/html"),
+                    filmResultsElt = dom.querySelector("ul#movie_results_ul"),
+                    tvResultsElt = dom.querySelector("ul#tv_results_ul"),
+                    allResultsElt = dom.createElement("div"),
+                    comparisonYear,
+                    yearDiff,
+                    relFilmUrl,
+                    absFilmUrl;
+                
+                // Gather all search results from page
+                [filmResultsElt, tvResultsElt].forEach(function (elt) {
+                    if (elt) {
+                        allResultsElt.appendChild(elt);
+                    }
+                });
+                
+                // Get years of all search results
+                yearElts = allResultsElt.querySelectorAll("div.media-body span");
+
+                // Pick result that roughly matches desired year
+                for (var i = 0; i < yearElts.length; i++) {
+                    comparisonYear = parseInt(yearElts[i].textContent.
+                           replace(/\(/, ""), 10);
+                    yearDiff = Math.abs(filmYear - comparisonYear);
+
+                    if (yearDiff < 2) {
+                        relFilmUrl = yearElts[i].previousSibling.
+                            getAttribute("href");
+                        absFilmUrl = "http://www.rottentomatoes.com" + relFilmUrl;
+                        return absFilmUrl;
+                    }
+                }
+                return null;    // No matching results
+            }
+
+            if (filmPageElt) {          // Redirected to film page
+                getRatingFromFilmPage(response);
+            } else if (searchPageElt) { // Redirected to search results page
+                var filmPageUrl = getFilmPageUrlFromSearchPage(response);
+
+                if (filmPageUrl) {
+                    GM_xmlhttpRequest({
+                        method: "GET",
+                        url: filmPageUrl,
+                        onload: getRatingFromFilmPage
+                    });
+                } else {
+                    // No rating found
+                    updateRatingsSection("Rotten Tomatoes", rottenUrl, null);
+                }
+            } else {
+                // No rating found
+                updateRatingsSection("Rotten Tomatoes", rottenUrl, null);
+            }
+        }
+
+        GM_xmlhttpRequest({
             method: "GET",
             url: imdbUrl,
-            onload: function (response) {
-                var res = response.responseText,
-                    parser = new DOMParser(),
-                    dom = parser.parseFromString(res, "text/html");
-
-                imdbUrl = response.finalUrl;
-
-                var imdbRatingElt = dom.
-                        querySelector("#overview-top .star-box-giga-star"),
-                    metaRatingMatch = dom.
-                        querySelector("#overview-top .star-box-details").
-                        textContent.match(/Metascore:  \d+/);
-                
-                // Check for rating in the page
-                if (imdbRatingElt) {
-                    var imdbRating = parseFloat(imdbRatingElt.textContent);
-                    showRatingElt("IMDb", imdbUrl, imdbRating);
-                } else {
-                    removeRatingElt("IMDb");
-                }
-
-                // Check for rating in the page
-                if (metaRatingMatch) {
-                    var metaRating = metaRatingMatch[0].match(/\d+/) / 10,
-                        metaUrl = imdbUrl + "criticreviews";
-
-                        showRatingElt("Metacritic", metaUrl, metaRating);    
-                } else {
-                    removeRatingElt("Metacritic");
-                }
-            }
+            onload: getIMDbAndMetaRatings
         });
 
-        getRottenRatings = GM_xmlhttpRequest({
+        GM_xmlhttpRequest({
             method: "GET",
             url: rottenUrl,
-            onload: function (response) {
-                var res = response.responseText,
-                    parser = new DOMParser(),
-                    dom = parser.parseFromString(res, "text/html");
-                
-                function getUrlOfMatchingResult(refYear, resultsElt) {
-                    var yearElts = resultsElt.
-                        querySelectorAll("div.media-body span");
-                    
-                    for (var i = 0; i < yearElts.length; i++) {
-                        var comparisonYear = parseInt(yearElts[i].textContent.
-                               replace(/\(/, ""), 10),
-                            yearDiff = Math.abs(refYear - comparisonYear);
-
-                        if (yearDiff < 2) {
-                            var relPath = yearElts[i].previousSibling.
-                                    getAttribute("href"),
-                                absPath = "http://www.rottentomatoes.com" +
-                                    relPath;
-
-                            return absPath;
-                        }
-                    }
-                    return null;
-                }
-
-                function showRottenRating(dom) {
-                    var ratingElt = dom.querySelector("#scoreStats");
-                    
-                    // Check for rating in the page
-                    if (ratingElt) {
-                        var ratingMatch = ratingElt.textContent.
-                            match(/Average Rating:  [0-9.]+/);
-                        
-                        if (ratingMatch) {
-                            var rottenRating = parseFloat(ratingMatch[0].
-                                match(/[0-9.]+/));
-                            showRatingElt("Rotten Tomatoes",
-                                rottenUrl, rottenRating);
-                        } else {
-                            removeRatingElt("Rotten Tomatoes");    
-                        }
-                    } else {
-                        removeRatingElt("Rotten Tomatoes");
-                    }
-                }
-
-                var filmPageElt = dom.querySelector("#scoreStats"),
-                    searchPageElt = dom.querySelector("#all_tab");
-
-                if (filmPageElt) {  // Redirected to film page
-                    rottenUrl = response.finalUrl;
-                    showRottenRating(dom);
-                } else if (searchPageElt) { // Redirected to search results page
-                    var filmResultsElt = dom.querySelector("ul#movie_results_ul"),
-                        tvResultsElt = dom.querySelector("ul#tv_results_ul"),
-                        allResultsElt = dom.createElement("div");
-                    
-                    // Look for a result matching the film year                    
-                    [filmResultsElt, tvResultsElt].forEach(function (elt) {
-                        if (elt) allResultsElt.appendChild(elt);
-                    });
-                    
-                    rottenUrl = getUrlOfMatchingResult(filmYear, allResultsElt);
-                    
-                    // Get film page for the match
-                    if (rottenUrl) {
-                        GM_xmlhttpRequest({
-                            method: "GET",
-                            url: rottenUrl,
-                            onload: function (response) {
-                                var res = response.responseText,
-                                    parser = new DOMParser(),
-                                    dom = parser.parseFromString(res, "text/html");
-                                
-                                rottenUrl = response.finalUrl;
-                                showRottenRating(dom);
-                            }
-                        });
-                    } else {
-                        removeRatingElt("Rotten Tomatoes");    
-                    }
-                } else {
-                    removeRatingElt("Rotten Tomatoes");
-                }
-            }
+            onload: getRottenRatings
         });
-        
-        getImdbAndMetaRatings();
-        getRottenRatings();
     }
 
-    function showRatingElt(siteName, siteUrl, rating) {
-        if (rating !== "" && rating !== 0 && !isNaN(rating)) {
-            var index = sites.indexOf(siteName),
-                ratingInStars = +(rating / 2).toFixed(1),   // Five-star scale
-                elt = document.querySelector("section.ratings-external").
-                    children[index],
-                innerElt = elt.children[0];
-                      
-            innerElt.classList.add("rating");
-            innerElt.classList.add("rated-" + Math.round(rating));
-            innerElt.setAttribute("title",
-                ratingInStars + " stars (" + +rating + "/10)");
-
-            elt.setAttribute("href", siteUrl);
-            elt.style.display = "block";
-
-            setTimeout(function () {
-                elt.style.opacity = "1";
-            }, 0);
-
-            decrLoadingCounter();
-        } else {
-            removeRatingElt(siteName);
-        }
-    }
-
-    function removeRatingElt(siteName) {
-        var index = sites.indexOf(siteName),
-            parentNode = document.querySelector("section.ratings-external"),
-            childNode = parentNode.children[index];
-
-        parentNode.removeChild(childNode);
-        sites.splice(index, 1);
-
-        decrLoadingCounter();
-    }
-
-    buildRatingsDisplay();
+    createRatingsSection(fillRatingsSection);
 }());
