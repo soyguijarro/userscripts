@@ -2,7 +2,7 @@
 // @name        Letterboxd Average Rating
 // @namespace   https://github.com/rcalderong/userscripts
 // @description Adds average rating of film to film pages
-// @copyright   2014, Ramón Calderón (http://rcalderon.es)
+// @copyright   2014+, Ramón Calderón (http://rcalderon.es)
 // @homepageURL https://github.com/rcalderong/userscripts
 // @supportURL  https://github.com/rcalderong/userscripts/issues
 // @updateURL   https://raw.githubusercontent.com/rcalderong/userscripts/master/Letterboxd_Average_Rating.user.js

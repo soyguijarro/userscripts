@@ -2,7 +2,7 @@
 // @name        Letterboxd Extra Profile Stats
 // @namespace   https://github.com/rcalderong/userscripts
 // @description Adds average number of films watched per month and per week to profile pages
-// @copyright   2014, Ramón Calderón (http://rcalderon.es)
+// @copyright   2014+, Ramón Calderón (http://rcalderon.es)
 // @homepageURL https://github.com/rcalderong/userscripts
 // @supportURL  https://github.com/rcalderong/userscripts/issues
 // @updateURL   https://raw.githubusercontent.com/rcalderong/userscripts/master/Letterboxd_Extra_Profile_Stats.user.js
