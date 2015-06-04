@@ -2,13 +2,13 @@
 // @name        Letterboxd External Ratings
 // @namespace   https://github.com/rcalderong/userscripts
 // @description Adds ratings of film from external sites to film pages
-// @copyright   2014, Ramón Calderón (http://rcalderon.es)
+// @copyright   2015, Ramón Calderón (http://rcalderon.es)
 // @homepageURL https://github.com/rcalderong/userscripts
 // @supportURL  https://github.com/rcalderong/userscripts/issues
-// @updateURL   https://raw.githubusercontent.com/rcalderong/userscripts/master/Letterboxd_Average_Rating.user.js
+// @updateURL   https://raw.githubusercontent.com/rcalderong/userscripts/master/Letterboxd_External_Ratings.user.js
 // @icon        https://raw.githubusercontent.com/rcalderong/userscripts/master/img/letterboxd_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
-// @version     1.4
+// @version     1.5
 // @include     /^http:\/\/(www.)?letterboxd.com\/film\/[\w|\-]+\/$/
 // @grant       GM_xmlhttpRequest
 // @grant       unsafeWindow
@@ -25,9 +25,12 @@
             ratingInnerElt;
 
         function getSpinnerImageUrl() {
-            for (var id in unsafeWindow.globals.spinners) {
-                if (id.match(/spinner_12/)) {
-                    return unsafeWindow.globals.spinners[id];
+            var spinnersObj = unsafeWindow.globals.spinners,
+                propExp = /spinner_12/; // Regex for sought property
+
+            for (var prop in spinnersObj) {
+                if (propExp.test(prop)) {
+                    return spinnersObj[prop];
                 }
             }
             return null;
@@ -93,34 +96,57 @@
         callback();
     }
 
-    function fillRatingsSection() {
+    function fillRatingsSection() {    
         var filmDataElt = document.querySelector("section.posters div.film-poster"),
             filmTitle = filmDataElt.getAttribute("data-film-name"),
             filmYear = parseInt(filmDataElt.getAttribute("data-film-release-year"), 10),
             imdbUrlElt = document.querySelector("section.col-main p.text-link a"),
             imdbUrl = imdbUrlElt.getAttribute("href"),
             rottenBaseUrl = "http://www.rottentomatoes.com/search/?search=",
-            rottenSuffixUrl = "#results_movies_tab"
-            rottenUrl = rottenBaseUrl + encodeURIComponent(filmTitle) +
+            rottenSuffixUrl = "#results_movies_tab",
+            rottenUrl = rottenBaseUrl + getNormalizedUrlComp(filmTitle) +
                 rottenSuffixUrl;
 
-        function updateRatingsSection(rating, siteName, siteUrl) {
+        function getNormalizedUrlComp(str) {
+            var combining = /[\u0300-\u036F]/g,
+                isNormalizeAvailable =
+                    (typeof String.prototype.normalize == "function"),
+                isEscapeAvailable = (typeof escape == "function"),
+                normalizedStr;
+
+            if (isNormalizeAvailable) {
+                normalizedStr = str.normalize('NFKD').replace(combining, '');
+                return encodeURIComponent(normalizedStr);
+            } else if (isEscapeAvailable) {
+                return escape(str);
+            } else {
+                return encodeURIComponent(str);
+            }
+        }
+
+        function updateRatingsSection(rating, siteName, siteUrl, tomatometer) {
             var index = externalSites.indexOf(siteName),
                 ratingsSectionElt = document.querySelector("section.ratings-external"),
                 ratingElts = ratingsSectionElt.getElementsByTagName("a"),
                 ratingElt = ratingElts[index],
                 ratingInnerElt = ratingElt.children[0],
-                ratingInStars = +(rating / 2).toFixed(1);   // Five-star scale
+                ratingInStars = +(rating / 2).toFixed(1),   // Five-star scale
+                tomatometerString;
 
             // Remove loading indicator (spinner)
             ratingInnerElt.classList.remove("spinner");
 
             // Fill rating element with data
             if (rating && rating !== "" && rating !== 0 && !isNaN(rating)) {
+                if (tomatometer) {
+                    tomatometerString = " – " + tomatometer + "%";
+                } else {
+                    tomatometerString = "";
+                }
                 ratingInnerElt.classList.add("rating");
                 ratingInnerElt.classList.add("rated-" + Math.round(rating));
                 ratingInnerElt.setAttribute("title", ratingInStars +
-                    " stars (" + (+rating) + "/10)");
+                    " stars (" + (+rating) + "/10)" + tomatometerString);
                 ratingElt.setAttribute("href", siteUrl);
                 ratingElt.style.cursor = "pointer";
             } else {
@@ -129,16 +155,18 @@
         }
 
         function getFinalUrlAbsPath(response, baseUrl) {
-            var path = response.finalUrl;
+            var path = response.finalUrl,
+                suffixExp = new RegExp(rottenSuffixUrl),
+                absPathExp = new RegExp(/^http/);
 
             // Remove suffix if present
-            if (path.match(rottenSuffixUrl)) {
+            if (suffixExp.test(path)) {
                 path = path.replace(rottenSuffixUrl, "");
             }
 
-            if (path.match(/^http/)) {  // Absolute path already
+            if (absPathExp.test(path)) {    // Absolute path already
                 return path;
-            } else {                    // Relative path
+            } else {                        // Relative path
                 return baseUrl + path;
             }
         }
@@ -206,11 +234,13 @@
                 var res = response.responseText,
                     dom = parser.parseFromString(res, "text/html"),
                     ratingElt = dom.getElementById("scoreStats"),
+                    tomatometerElt = dom.getElementById("tomato_meter_link"),
                     ratingMatch,
                     resultYearElt,
                     resultYear,
                     yearDiff,
-                    rottenRating;
+                    rottenRating,
+                    rottenTomatometer;
                 
                 if (ratingElt) {
                     ratingMatch = ratingElt.textContent.
@@ -226,10 +256,12 @@
                         if (yearDiff <= 2) {
                             rottenRating = parseFloat(ratingMatch[0].
                                 match(/[0-9.]+/));
+                            rottenTomatometer = (tomatometerElt) ?
+                                parseInt(tomatometerElt.textContent, 10) : null;                            
                             rottenUrl = getFinalUrlAbsPath(response,
                                 "http://www.rottentomatoes.com");
                             updateRatingsSection(rottenRating, "Rotten Tomatoes",
-                                rottenUrl);
+                                rottenUrl, rottenTomatometer);
                         } else {
                             updateRatingsSection(null, "Rotten Tomatoes");
                         }
