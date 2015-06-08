@@ -15,7 +15,7 @@ Adds the average rating of a film to [Letterboxd](http://letterboxd.com)'s film 
 
 ![Letterboxd External Ratings in action](img/letterboxd_external_ratings_screenshot.gif)
 
-Adds ratings from external sites to [Letterboxd](http://letterboxd.com)'s film pages ([IMDb](http://www.imdb.com/), [Metacritic](http://www.metacritic.com/) and [Rotten Tomatoes](http://www.rottentomatoes.com/) for now). The ratings are presented with star icons below the rating histogram. Hovering over reveals the exact number of stars and the original one-to-ten scale rating.
+Adds ratings from external sites to [Letterboxd](http://letterboxd.com)'s film pages ([IMDb](http://www.imdb.com/), [Metacritic](http://www.metacritic.com/) and [Rotten Tomatoes](http://www.rottentomatoes.com/) for now). You can toggle between the original ratings and their five-star scale equivalents. The state of the toggle is kept so all film pages will use whatever mode was last selected until you change it again. Links to the film on the external sites are provided as well.
 
 ### Letterboxd Backdrop Remover
 
