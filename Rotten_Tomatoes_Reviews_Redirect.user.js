@@ -6,7 +6,7 @@
 // @homepageURL https://github.com/rcalderong/userscripts
 // @supportURL  https://github.com/rcalderong/userscripts/issues
 // @updateURL   https://raw.githubusercontent.com/rcalderong/userscripts/master/Rotten_Tomatoes_Reviews_Redirect.user.js
-// @icon        https://raw.githubusercontent.com/rcalderong/userscripts/master/img/letterboxd_icon.png
+// @icon        https://raw.githubusercontent.com/rcalderong/userscripts/master/img/rotten_tomatoes_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
 // @version     1.0
 // @include     http://www.rottentomatoes.com/m/*
