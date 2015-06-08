@@ -8,20 +8,23 @@
 // @updateURL   https://raw.githubusercontent.com/rcalderong/userscripts/master/Letterboxd_Backdrop_Remover.user.js
 // @icon        https://raw.githubusercontent.com/rcalderong/userscripts/master/img/letterboxd_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
-// @version     1.1
-// @include     /^http:\/\/(www.)?letterboxd.com\/film\/[\w|\-]+\/$/
+// @version     1.2
+// @include     http://letterboxd.com/film/*
+// @include     http://letterboxd.com/film/*/crew/*
+// @include     http://letterboxd.com/film/*/studios/*
+// @include     http://letterboxd.com/film/*/genres/*
+// @exclude     http://letterboxd.com/film/*/views/*
+// @exclude     http://letterboxd.com/film/*/lists/*
+// @exclude     http://letterboxd.com/film/*/likes/*
+// @exclude     http://letterboxd.com/film/*/fans/*
+// @exclude     http://letterboxd.com/film/*/ratings/*
+// @exclude     http://letterboxd.com/film/*/reviews/*
 // @grant       none
 // ==/UserScript==
 
-(function () {
-    // Only execute if page has a backdrop
-    if (document.getElementsByClassName("has-backdrop").length > 0) {
-        var container = document.getElementById("content"),
-            backdrop = container.children[0],
-            content = backdrop.children[0].children[0];
+var containerElt = document.getElementById("content"),
+    backdropElt = document.getElementById("backdrop"),
+    contentElt = backdropElt.getElementsByClassName("content-wrap")[0];
 
-        // Remove backdrop and make remaining content take the space
-        container.replaceChild(content, backdrop);
-        container.removeAttribute("class"); // has-backdrop class
-    }
-}());
+containerElt.replaceChild(contentElt, backdropElt);
+containerElt.classList.remove("has-backdrop");

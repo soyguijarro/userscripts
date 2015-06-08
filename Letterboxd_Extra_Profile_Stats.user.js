@@ -8,62 +8,66 @@
 // @updateURL   https://raw.githubusercontent.com/rcalderong/userscripts/master/Letterboxd_Extra_Profile_Stats.user.js
 // @icon        https://raw.githubusercontent.com/rcalderong/userscripts/master/img/letterboxd_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
-// @version     1.3
-// @include     /^http:\/\/(www.)?letterboxd.com\/[\w]+\/$/
-// @exclude     /^http:\/\/(www.)?letterboxd.com\/activity\/$/
-// @exclude     /^http:\/\/(www.)?letterboxd.com\/films\/$/
-// @exclude     /^http:\/\/(www.)?letterboxd.com\/lists\/$/
-// @exclude     /^http:\/\/(www.)?letterboxd.com\/people\/$/
-// @exclude     /^http:\/\/(www.)?letterboxd.com\/settings\/$/
-// @exclude     /^http:\/\/(www.)?letterboxd.com\/invitations\/$/
-// @exclude     /^http:\/\/(www.)?letterboxd.com\/about\/$/
-// @exclude     /^http:\/\/(www.)?letterboxd.com\/pro\/$/
-// @exclude     /^http:\/\/(www.)?letterboxd.com\/welcome\/$/
-// @exclude     /^http:\/\/(www.)?letterboxd.com\/legal\/$/
-// @exclude     /^http:\/\/(www.)?letterboxd.com\/api\/$/
-// @exclude     /^http:\/\/(www.)?letterboxd.com\/contact\/$/
+// @version     1.4
+// @include     /^http://letterboxd.com/\w+/#?$/
+// @exclude     /^http://letterboxd.com/films//
+// @exclude     /^http://letterboxd.com/lists//
+// @exclude     /^http://letterboxd.com/people//
+// @exclude     /^http://letterboxd.com/search//
+// @exclude     /^http://letterboxd.com/settings//
+// @exclude     /^http://letterboxd.com/activity//
+// @exclude     /^http://letterboxd.com/invitations//
+// @exclude     /^http://letterboxd.com/about//
+// @exclude     /^http://letterboxd.com/pro//
+// @exclude     /^http://letterboxd.com/welcome//
+// @exclude     /^http://letterboxd.com/contact//
+// @exclude     /^http://letterboxd.com/201\d//
 // @grant       none
 // ==/UserScript==
 
-(function () {
-    var diaryUrl,   // URL of the user's film diary
-        filmsMonth, // Average number of films watched per month
-        filmsWeek,  // Average number of films watched per week
-        filmsYear,  // Number of films watched this year
-        statsElt;   // Page element that contains user statistics
+var headerElt = document.getElementById("profile-header"),
+    avatarElt = headerElt.getElementsByClassName("avatar")[0],
+    infoElt = headerElt.getElementsByClassName("profile-person-info")[0],
+    statsElt = headerElt.getElementsByClassName("stats")[0],
+    dataMatch = statsElt.innerHTML.match(/<a href="(.*?)"><strong>(\d+).*This year/),
+    diaryUrl = dataMatch[1],
+    filmsPerYear = dataMatch[2],
+    filmsPerMonth,
+    filmsPerWeek,
+    avgElt,
+    avgInnerElt,
+    numElt,
+    textElt;
 
-    // Get data from page
-    statsElt = document.querySelector("ul.stats");
-    diaryUrl = statsElt.children[1].children[0].getAttribute("href");
-    filmsYear = statsElt.children[1].children[0].children[0].textContent;
+// Calculate averages
+filmsPerMonth = (filmsPerYear / (new Date().getMonth() + 1));
+filmsPerWeek = ((filmsPerMonth / 30) * 7);
 
-    // Calculate averages
-    filmsMonth = +(filmsYear / (new Date().getMonth() + 1)).toFixed(1);
-    filmsWeek = +((filmsMonth / 30) * 7).toFixed(1);
+// Insert calculated averages in page
+[filmsPerWeek, filmsPerMonth].forEach(function (filmsAvg, index) {
+    avgElt = document.createElement("li");
+    avgInnerElt = document.createElement("a");
+    numElt = document.createElement("strong");
+    textElt = document.createElement("span");
 
-    // Remove zero after decimal point, if present
-    [filmsMonth, filmsWeek].map(function (n) {
-        return (n === parseInt(n, 10)) ? parseInt(n, 10) : n;
-    });
+    // Round to one decimal place and remove trailing zero if present
+    filmsAvg = filmsAvg.toFixed(1).replace(/^(\d+)\.0$/, "$1");
+    
+    // Fill element with data
+    avgInnerElt.href = diaryUrl;
+    numElt.textContent = filmsAvg;
+    textElt.textContent = (index === 0) ? "Per week" : "Per month";
 
-    // Insert calculated averages in page
-    [filmsWeek, filmsMonth].forEach(function (filmsAvg) {
-        var infoElt = document.getElementsByClassName("profile-person-info")[0],
-            linkElt = document.createElement("a"),
-            newElt = document.createElement("li"),
-            numberElt = document.createElement("strong"),
-            textElt = document.createElement("span");
-        
-        linkElt.setAttribute("href", diaryUrl);
-        numberElt.textContent = filmsAvg;
-        textElt.textContent = (filmsAvg === filmsWeek) ? "Per week" : "Per month";
+    // Build element structure
+    avgInnerElt.appendChild(numElt);
+    avgInnerElt.appendChild(textElt);
+    avgElt.appendChild(avgInnerElt);
+    
+    // Insert element in page
+    statsElt.insertBefore(avgElt, statsElt.children[2]);
+});
 
-        linkElt.appendChild(numberElt);
-        linkElt.appendChild(textElt);
-        newElt.appendChild(linkElt);
-        
-        statsElt.insertBefore(newElt, statsElt.children[2]);
-        infoElt.style.width = infoElt.style.maxWidth =
-            infoElt.offsetWidth - newElt.offsetWidth + "px";
-    });
-}());
+// Prevent overflow in layout
+infoElt.style.width = "auto";
+infoElt.style.maxWidth = headerElt.offsetWidth -
+    avatarElt.offsetWidth - statsElt.offsetWidth + "px";

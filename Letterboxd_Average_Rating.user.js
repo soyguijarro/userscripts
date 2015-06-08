@@ -8,35 +8,38 @@
 // @updateURL   https://raw.githubusercontent.com/rcalderong/userscripts/master/Letterboxd_Average_Rating.user.js
 // @icon        https://raw.githubusercontent.com/rcalderong/userscripts/master/img/letterboxd_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
-// @version     1.2
-// @include     /^http:\/\/(www.)?letterboxd.com\/film\/[\w|\-]+\/$/
+// @version     1.3
+// @include     http://letterboxd.com/film/*
+// @include     http://letterboxd.com/film/*/crew/*
+// @include     http://letterboxd.com/film/*/studios/*
+// @include     http://letterboxd.com/film/*/genres/*
+// @exclude     http://letterboxd.com/film/*/views/*
+// @exclude     http://letterboxd.com/film/*/lists/*
+// @exclude     http://letterboxd.com/film/*/likes/*
+// @exclude     http://letterboxd.com/film/*/fans/*
+// @exclude     http://letterboxd.com/film/*/ratings/*
+// @exclude     http://letterboxd.com/film/*/reviews/*
 // @grant       none
 // ==/UserScript==
 
-(function () {
-    var newElt,         // Element with average rating to be inserted in page
-        newInnerElt,    // Element with average rating to be inserted in page
-        rating5,        // Average rating of the film in a five-star scale
-        rating10,       // Average rating of the film in a one-to-ten scale
-        ratingsElt;     // Page element of the ratings section
+var sectionElt = document.getElementsByClassName("ratings-histogram-chart")[0],
+    ratingsPageUrl = sectionElt.getElementsByTagName("a")[0].href,
+    dataElt = sectionElt.querySelector("span.average-rating meta"),
+    oneToTenRating = parseFloat(dataElt.getAttribute("content")),
+    oneToFiveRating = (oneToTenRating / 2).toFixed(1),
+    ratingElt = document.createElement("a"),
+    ratingInnerElt = document.createElement("span");
 
-    // Get average rating from page metadata
-    ratingsElt = document.querySelector("section.ratings-histogram-chart");
-    rating10 = parseFloat(ratingsElt.querySelector("span.average-rating meta").
-        getAttribute("content"));
-    rating5 = (rating10 / 2).toFixed(1);
+// Create element to be inserted in page
+ratingElt.className = "rating-green tooltip";
+ratingElt.style.position = "absolute";
+ratingElt.style.top = "0";
+ratingElt.style.left = "72px";
+ratingElt.href = ratingsPageUrl;
+ratingElt.setAttribute("title", oneToFiveRating + " stars" +
+    " (" + oneToTenRating + "/10)");
+ratingInnerElt.className = "rating rated-" + Math.round(oneToTenRating);
+ratingElt.appendChild(ratingInnerElt);
 
-    // Create element to be inserted in page
-    newElt = document.createElement("a");
-    newElt.className = "rating-green tooltip";
-    newElt.setAttribute("href",
-        ratingsElt.querySelector("h3 a").getAttribute("href"));
-    newElt.setAttribute("title", rating5 + " stars" + " (" + rating10 + "/10)");
-    newElt.setAttribute("style", "position: absolute; top: 0; left: 72px;");
-    newInnerElt = document.createElement("span");
-    newInnerElt.className = "rating rated-" + Math.round(rating10);
-    newElt.appendChild(newInnerElt);
-
-    // Insert element in page
-    ratingsElt.insertBefore(newElt, ratingsElt.children[1]);
-}());
+// Insert element in page
+sectionElt.insertBefore(ratingElt, sectionElt.children[1]);
