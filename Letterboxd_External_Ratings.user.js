@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        Letterboxd External Ratings
-// @namespace   https://github.com/rcalderong/userscripts
+// @namespace   https://github.com/soyguijarro/userscripts
 // @description Adds ratings of film from external sites to film pages
-// @copyright   2015, Ramón Calderón (http://rcalderon.es)
-// @homepageURL https://github.com/rcalderong/userscripts
-// @supportURL  https://github.com/rcalderong/userscripts/issues
-// @updateURL   https://raw.githubusercontent.com/rcalderong/userscripts/master/Letterboxd_External_Ratings.user.js
-// @icon        https://raw.githubusercontent.com/rcalderong/userscripts/master/img/letterboxd_icon.png
+// @copyright   2015, Ramón Guijarro (http://soyguijarro.com)
+// @homepageURL https://github.com/soyguijarro/userscripts
+// @supportURL  https://github.com/soyguijarro/userscripts/issues
+// @updateURL   https://raw.githubusercontent.com/soyguijarro/userscripts/master/Letterboxd_External_Ratings.user.js
+// @icon        https://raw.githubusercontent.com/soyguijarro/userscripts/master/img/letterboxd_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
 // @version     1.6
 // @include     http://letterboxd.com/film/*
