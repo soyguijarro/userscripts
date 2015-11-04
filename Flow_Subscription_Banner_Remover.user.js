@@ -13,5 +13,7 @@
 // @grant       none
 // ==/UserScript==
 
-var alertElt = document.getElementsByClassName('app-alert')[0];
-alertElt.style.display = 'none';
+window.addEventListener('load', function() {
+  var alertElt = document.getElementsByClassName('app-alert')[0];
+  alertElt.style.display = 'none';
+}, false);
