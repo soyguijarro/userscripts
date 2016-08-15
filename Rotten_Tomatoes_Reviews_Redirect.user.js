@@ -8,9 +8,9 @@
 // @updateURL   https://raw.githubusercontent.com/soyguijarro/userscripts/master/Rotten_Tomatoes_Reviews_Redirect.user.js
 // @icon        https://raw.githubusercontent.com/soyguijarro/userscripts/master/img/rotten_tomatoes_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
-// @version     1.0
-// @include     http://www.rottentomatoes.com/m/*
-// @include     http://www.rottentomatoes.com/m/*/reviews/*
+// @version     1.1
+// @include     *://www.rottentomatoes.com/m/*
+// @include     *://www.rottentomatoes.com/m/*/reviews/*
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
