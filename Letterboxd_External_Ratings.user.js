@@ -8,7 +8,7 @@
 // @updateURL   https://raw.githubusercontent.com/soyguijarro/userscripts/master/Letterboxd_External_Ratings.user.js
 // @icon        https://raw.githubusercontent.com/soyguijarro/userscripts/master/img/letterboxd_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
-// @version     1.6
+// @version     1.7
 // @include     http://letterboxd.com/film/*
 // @include     http://letterboxd.com/film/*/crew/*
 // @include     http://letterboxd.com/film/*/studios/*
@@ -100,7 +100,7 @@ function createRatingsSection(callback) {
     function getModeToggleButtonText() {
         var ratingsModeName =
             (localStorage.origRatingsMode === "true") ? "five-star" : "original";
-        
+
         return "Show " + ratingsModeName + " ratings";
     }
 
@@ -114,7 +114,7 @@ function createRatingsSection(callback) {
             updateRatingElt(Object.keys(ratingsData)[i]);
         }
     }
-   
+
     // Set up section to be inserted in page
     ratingsSectionElt.className = "section ratings-external";
 
@@ -122,7 +122,7 @@ function createRatingsSection(callback) {
     for (var i = 0; i < Object.keys(ratingsData).length; i++) {
         ratingElt = document.createElement("a");
         ratingInnerElt = document.createElement("span");
-        
+
         ratingElt.textContent = Object.keys(ratingsData)[i];
         ratingElt.className = "rating-green";
         ratingInnerElt.className = "spinner";
@@ -172,12 +172,11 @@ function fillRatingsSection() {
     function getIMDbAndMetaRatings(res) {
         var parser = new DOMParser(),
             dom = parser.parseFromString(res.responseText, "text/html"),
-            ratingsElt = dom.getElementById("overview-top");
-        
+            ratingsElt = dom.getElementById("title-overview-widget");
+
         function getIMDbRating() {
             var imdbRating,
-                imdbRatingElt = ratingsElt.
-                    getElementsByClassName("star-box-giga-star")[0];
+                imdbRatingElt = ratingsElt.querySelector("span[itemprop=ratingValue]");
 
             if (imdbRatingElt) {
                 imdbRating = parseFloat(imdbRatingElt.textContent);
@@ -188,16 +187,17 @@ function fillRatingsSection() {
         }
 
         function getMetaRating() {
-            var metaRatingMatch = ratingsElt.textContent.
-                match(/Metascore:  (\d+)\/100/);
+            var metaRating,
+                metaRatingElt = ratingsElt.querySelector(".metacriticScore span");
 
-            if (metaRatingMatch) {
+            if (metaRatingElt) {
+                metaRating = parseFloat(metaRatingElt.textContent);
+
                 GM_xmlhttpRequest({
                     method: "GET",
                     url: imdbUrl + "criticreviews", // Metacritic reviews page on IMDb
                     onload: function (res) {
-                        var metaRating = metaRatingMatch[1],
-                            pageContent,
+                        var pageContent,
                             metaUrl;
 
                         dom = parser.parseFromString(res.responseText, "text/html");
@@ -211,7 +211,7 @@ function fillRatingsSection() {
                 });
             } else {
                 updateRatingData("Metascore", null);
-            }    
+            }
         }
 
         if (ratingsElt) {
@@ -228,7 +228,7 @@ function fillRatingsSection() {
             rottenId,
             rottenUrl,
             rottenRating;
-            
+
         if (json) {
             if (json.id && json.ratings && !json.error) {
                 rottenUrl = "http://www.rottentomatoes.com/m/" + json.id;
