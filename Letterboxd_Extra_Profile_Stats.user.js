@@ -8,20 +8,20 @@
 // @updateURL   https://raw.githubusercontent.com/soyguijarro/userscripts/master/Letterboxd_Extra_Profile_Stats.user.js
 // @icon        https://raw.githubusercontent.com/soyguijarro/userscripts/master/img/letterboxd_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
-// @version     1.4
-// @include     /^http://letterboxd.com/\w+/#?$/
-// @exclude     /^http://letterboxd.com/films//
-// @exclude     /^http://letterboxd.com/lists//
-// @exclude     /^http://letterboxd.com/people//
-// @exclude     /^http://letterboxd.com/search//
-// @exclude     /^http://letterboxd.com/settings//
-// @exclude     /^http://letterboxd.com/activity//
-// @exclude     /^http://letterboxd.com/invitations//
-// @exclude     /^http://letterboxd.com/about//
-// @exclude     /^http://letterboxd.com/pro//
-// @exclude     /^http://letterboxd.com/welcome//
-// @exclude     /^http://letterboxd.com/contact//
-// @exclude     /^http://letterboxd.com/201\d//
+// @version     1.5
+// @include     /^*://letterboxd.com/\w+/#?$/
+// @exclude     /^*://letterboxd.com/films//
+// @exclude     /^*://letterboxd.com/lists//
+// @exclude     /^*://letterboxd.com/people//
+// @exclude     /^*://letterboxd.com/search//
+// @exclude     /^*://letterboxd.com/settings//
+// @exclude     /^*://letterboxd.com/activity//
+// @exclude     /^*://letterboxd.com/invitations//
+// @exclude     /^*://letterboxd.com/about//
+// @exclude     /^*://letterboxd.com/pro//
+// @exclude     /^*://letterboxd.com/welcome//
+// @exclude     /^*://letterboxd.com/contact//
+// @exclude     /^*://letterboxd.com/201\d//
 // @grant       none
 // ==/UserScript==
 
@@ -52,7 +52,7 @@ filmsPerWeek = ((filmsPerMonth / 30) * 7);
 
     // Round to one decimal place and remove trailing zero if present
     filmsAvg = filmsAvg.toFixed(1).replace(/^(\d+)\.0$/, "$1");
-    
+
     // Fill element with data
     avgInnerElt.href = diaryUrl;
     numElt.textContent = filmsAvg;
@@ -62,7 +62,7 @@ filmsPerWeek = ((filmsPerMonth / 30) * 7);
     avgInnerElt.appendChild(numElt);
     avgInnerElt.appendChild(textElt);
     avgElt.appendChild(avgInnerElt);
-    
+
     // Insert element in page
     statsElt.insertBefore(avgElt, statsElt.children[2]);
 });

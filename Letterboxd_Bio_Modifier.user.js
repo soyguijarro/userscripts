@@ -8,9 +8,9 @@
 // @updateURL   https://raw.githubusercontent.com/soyguijarro/userscripts/master/Letterboxd_Bio_Modifier.user.js
 // @icon        https://raw.githubusercontent.com/soyguijarro/userscripts/master/img/letterboxd_icon.png
 // @license     GPLv3; http://www.gnu.org/licenses/gpl.html
-// @version     1.1
-// @include     http://letterboxd.com/director/*
-// @include     http://letterboxd.com/actor/*
+// @version     1.2
+// @include     *://letterboxd.com/director/*
+// @include     *://letterboxd.com/actor/*
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -127,13 +127,13 @@ function showBioSummary(res) {
     // Fill section with available data
     if (gotRelevantData) {
         if (isActualData(tmdbBirthplaceElt)) {
-            showBirthplace();    
+            showBirthplace();
         }
         if (isActualData(tmdbBirthdayElt)) {
-            showBornDeathDate();    
+            showBornDeathDate();
         }
         if (creditsMatch) {
-            showNumCredits();    
+            showNumCredits();
         }
     } else {
         return; // Abort if no relevant data at all is available
@@ -152,7 +152,7 @@ function showBioSummary(res) {
         bioElt.getElementsByClassName("panel-text")[0];
 
     if (bioInnerElt) {  // Already existing bio section
-        bioInnerElt.insertBefore(bioSummaryElt, bioInnerElt.firstElementChild.nextSibling);    
+        bioInnerElt.insertBefore(bioSummaryElt, bioInnerElt.firstElementChild.nextSibling);
     } else {    // No bio section, add missing header
         var bioHeaderElt = document.createElement("h2");
         bioHeaderElt.className = "section-heading";
