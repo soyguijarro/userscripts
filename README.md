@@ -1,3 +1,5 @@
+> :warning: **These scripts are no longer maintained**
+
 # User scripts for web browsers
 
 This repository hosts a few user scripts I've written. These are little pieces of software that extend or modify the behavior or appearance of certain web pages. They need to be used with a user script manager, which is an add-on or extension for web browsers (check the [installation section](#installation)).
